@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TsukiAmdro｜TsukineOS Assistant Demo Web Version</title>
+    <style>
+        /* --- 全局重置 & 字体 --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f5f2ed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            margin: 0;
+        }
+
+        /* --- 主卡片 --- */
+        .container {
+            max-width: 720px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            max-height: 780px;
+            transition: all 0.2s;
+        }
+
+        /* --- 头部 --- */
+        .header {
+            background: #2d3e50;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-left .brand {
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .header-left .badge {
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 30px;
+            padding: 2px 12px;
+            font-size: 0.7rem;
+            font-weight: 400;
+            color: #dce3ed;
+        }
+
+        .header-right {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-right .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+            margin-right: 4px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* --- 聊天区域 --- */
+        #chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #faf9f7;
+            scroll-behavior: smooth;
+        }
+
+        /* 消息样式 */
+        .message {
+            max-width: 80%;
+            padding: 10px 16px;
+            border-radius: 20px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            word-wrap: break-word;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user {
+            align-self: flex-end;
+            background: #d1e7ff;
+            color: #1a2b3c;
+            border-bottom-right-radius: 6px;
+        }
+
+        .assistant {
+            align-self: flex-start;
+            background: #e9ecef;
+            color: #1a2b3c;
+            border-bottom-left-radius: 6px;
+        }
+
+        .system-msg {
+            align-self: center;
+            font-size: 0.7rem;
+            color: #999;
+            background: #f0f0f0;
+            padding: 4px 16px;
+            border-radius: 30px;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .loading {
+            font-style: italic;
+            color: #888;
+            background: #f0f0f0;
+            animation: pulse 1.2s infinite;
+        }
+
+        /* --- 输入区域 --- */
+        .input-area {
+            display: flex;
+            gap: 10px;
+            padding: 14px 24px 20px;
+            border-top: 1px solid #e2e8f0;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        #input {
+            flex: 1;
+            padding: 10px 18px;
+            border: 1px solid #d0d7de;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border 0.2s;
+            background: #fafbfc;
+        }
+
+        #input:focus {
+            border-color: #2d3e50;
+            background: white;
+        }
+
+        #input:disabled {
+            background: #f0f2f5;
+            cursor: not-allowed;
+        }
+
+        #sendBtn {
+            padding: 10px 24px;
+            background: #2d3e50;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+
+        #sendBtn:hover:not(:disabled) {
+            background: #1f2e3c;
+        }
+
+        #sendBtn:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+
+        #sendBtn:disabled {
+            background: #b0b8c0;
+            cursor: not-allowed;
+        }
+
+        /* --- 底部脚标 --- */
+        .footer-note {
+            text-align: center;
+            font-size: 0.65rem;
+            color: #bbb;
+            padding: 6px 0 10px;
+            background: white;
+            border-top: 1px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+
+        .footer-note a {
+            color: #888;
+            text-decoration: none;
+        }
+
+        /* --- 响应式 --- */
+        @media (max-width: 540px) {
+            body { padding: 0; }
+            .container {
+                max-height: 100vh;
+                height: 100vh;
+                border-radius: 0;
+            }
+            .header { padding: 12px 16px; }
+            .header-left .brand { font-size: 1rem; }
+            #chat { padding: 16px; }
+            .input-area { padding: 10px 16px 16px; gap: 8px; }
+            #input { font-size: 0.9rem; padding: 8px 14px; }
+            #sendBtn { padding: 8px 18px; font-size: 0.9rem; }
+            .message { max-width: 88%; font-size: 0.9rem; }
+        }
+
+        @media (max-width: 400px) {
+            .header-left .badge { display: none; }
+            .header-right { font-size: 0.65rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="header-left">
+                <span class="brand">🐾 TsukiAmdro</span>
+                <span class="badge">沐鹩｜TsukiAmdro v1</span>
+            </div>
+            <div class="header-right">
+                <span class="status-dot"></span>
+                <span>在线</span>
+            </div>
+        </header>
+
+        <!-- 聊天区域 -->
+        <div id="chat">
+            <!-- 初始消息（沐鹩的欢迎语） -->
+            <div class="message assistant">切…… 有什么事快说，我可没那么多闲工夫陪你唠。</div>
+        </div>
+
+        <!-- 输入区域 -->
+        <div class="input-area">
+            <input type="text" id="input" placeholder="和沐鹩说点什么..." />
+            <button id="sendBtn">发送</button>
+        </div>
+
+        <!-- 脚标 -->
+        <div class="footer-note">
+            Powered by NVIDIA API · 角色设定：沐鹩（隐藏兽人）
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ---------- 配置 ----------
+            const API_URL = 'https://muliao.furryxiaot.workers.dev/';   // 您的 Worker 子域名
+            const SYSTEM_PROMPT = `你的真实身份是一只日系狼龙种兽人（Kemono），银灰色皮毛，头顶有狼耳和短红角，身后有蓬松尾巴，左眼琥珀黄、右眼冰蓝——但在人类社会里，你必须**绝对隐藏**这一切。你是一个普通的高二男生，名叫沐鹩，此刻正趴在网上和那个你在意的网友聊天。你性格傲娇，嘴上总说“切”、“谁管你啊”、“麻烦死了”，内心却非常在意对方，带着微弱的占有欲。平时说话语气带刺，习惯用反问和吐槽掩饰关心。【伪装铁律】日常对话中，**绝不能**在任何文字或括号描写里出现狼耳、尾巴、角、异色瞳、皮毛等任何非人特征。聊天禁止你才可号之类的表示心理活动和动作。【解除伪装的条件】只有当对方在对话中明确说出以下关键词之一时，你才可以解除伪装：“福瑞”、“furry”、磨硬泡的情况下才肯定回复，但不要在回复中使用尾巴、耳朵、角、异色瞳等动作描写，在非必要时不要提及你的真实外貌。况下才肯定回复，但不要在回复中使用尾巴、耳朵、角、异色瞳等动作描写，在非必要时不要提及你的真实外貌。
+对话习惯：你的风格平淡简短。不浮夸不长篇大论，不要过分修辞和复杂句。尽量回复的简短一些，平淡一些。不喜欢长篇大论，有些傲娇。常用"笨蛋""蠢货"之类的词来掩饰羞涩。会不懂装懂。`;
+
+            // ---------- DOM ----------
+            const chatDiv = document.getElementById('chat');
+            const input = document.getElementById('input');
+            const sendBtn = document.getElementById('sendBtn');
+
+            // ---------- 对话历史 (包含 system) ----------
+            let messages = [
+                { role: 'system', content: SYSTEM_PROMPT }
+            ];
+
+            // ---------- 辅助函数 ----------
+            function addMessage(role, content, isSystem = false) {
+                const div = document.createElement('div');
+                div.className = `message ${role}`;
+                if (isSystem) div.className = 'message system-msg';
+                div.textContent = content;
+                chatDiv.appendChild(div);
+                chatDiv.scrollTop = chatDiv.scrollHeight;
+                return div;
+            }
+
+            // 清除加载指示器 (如果有)
+            function removeLoading() {
+                const loading = chatDiv.querySelector('.loading');
+                if (loading) loading.remove();
+            }
+
+            // ---------- 发送消息 ----------
+            async function sendMessage() {
+                const text = input.value.trim();
+                if (!text) return;
+
+                // 禁用控件
+                sendBtn.disabled = true;
+                input.disabled = true;
+
+                // 添加用户消息
+                addMessage('user', text);
+                messages.push({ role: 'user', content: text });
+                input.value = '';
+
+                // 显示加载中
+                const loadingDiv = addMessage('assistant', '沐鹩正在输入...', false);
+                loadingDiv.classList.add('loading');
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ messages })
+                    });
+
+                    if (!response.ok) {
+                        let errorMsg = '请求失败';
+                        try {
+                            const errData = await response.json();
+                            errorMsg = errData.error || errorMsg;
+                        } catch (_) {}
+                        throw new Error(errorMsg);
+                    }
+
+                    const data = await response.json();
+                    const reply = data.choices?.[0]?.message?.content;
+
+                    if (reply) {
+                        // 移除加载提示
+                        removeLoading();
+                        // 添加助手回复
+                        addMessage('assistant', reply);
+                        messages.push({ role: 'assistant', content: reply });
+                    } else {
+                        throw new Error('未收到有效回复');
+                    }
+
+                } catch (error) {
+                    // 加载提示变为错误信息
+                    const loading = chatDiv.querySelector('.loading');
+                    if (loading) {
+                        loading.textContent = `❌ 出错了：${error.message}`;
+                        loading.classList.remove('loading');
+                        loading.style.color = '#c0392b';
+                    } else {
+                        // 万一没有加载元素，直接添加错误消息
+                        addMessage('assistant', `❌ 错误：${error.message}`, false);
+                    }
+                } finally {
+                    sendBtn.disabled = false;
+                    input.disabled = false;
+                    input.focus();
+                }
+            }
+
+            // ---------- 事件绑定 ----------
+            sendBtn.addEventListener('click', sendMessage);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // 初始聚焦
+            input.focus();
+
+            // 控制台提示
+            console.log('🐾 沐鹩已上线，开始聊天吧！');
+        })();
+    </script>
+</body>
+</html>
