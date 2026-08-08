@@ -1,4 +1,4 @@
-// functions/api/chat.js - 详细调试版
+// functions/api/chat.js - 终极清洗版
 export async function onRequest(context) {
     // 处理 OPTIONS
     if (context.request.method === 'OPTIONS') {
@@ -17,121 +17,103 @@ export async function onRequest(context) {
     }
 
     try {
-        // ---- 1. 读取并清洗请求体 ----
+        // ---- 1. 读取原始文本 ----
         const rawText = await context.request.text();
-        const cleaned = rawText
-            .replace(/^\uFEFF/, '')
-            .replace(/[\u200B-\u200D\u2060]/g, '')
-            .trim();
 
-        if (!cleaned) {
-            return new Response(JSON.stringify({ 
-                error: '请求体为空',
-                step: 'parse_body'
+        // ---- 2. 强制清洗：只保留可打印字符 ----
+        // 移除所有控制字符（ASCII 0-31 和 127-159），保留换行符和制表符
+        let cleaned = rawText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '');
+        // 移除 BOM
+        cleaned = cleaned.replace(/^\uFEFF/, '');
+        // 移除零宽字符
+        cleaned = cleaned.replace(/[\u200B-\u200D\u2060\uFEFF]/g, '');
+        // 去除首尾空白
+        cleaned = cleaned.trim();
+
+        // ---- 3. 如果清洗后为空 ----
+        if (!cleaned || cleaned === '{}') {
+            return new Response(JSON.stringify({
+                error: '请求体为空或只有空白字符',
+                raw_length: rawText.length,
+                cleaned_length: cleaned.length
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
+        // ---- 4. 尝试解析 JSON ----
         let parsed;
         try {
             parsed = JSON.parse(cleaned);
         } catch (parseErr) {
+            // 返回详细的调试信息
             return new Response(JSON.stringify({
                 error: `JSON 解析失败: ${parseErr.message}`,
-                preview: cleaned.substring(0, 100),
-                step: 'parse_json'
+                position: parseErr.message.match(/position (\d+)/)?.[1] || '未知',
+                preview: cleaned.substring(0, 200),
+                char_codes: cleaned.substring(0, 20).split('').map(c => c.charCodeAt(0))
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
+        // ---- 5. 验证 messages ----
         if (!parsed.messages || !Array.isArray(parsed.messages)) {
             return new Response(JSON.stringify({
-                error: '缺少 messages 字段或格式不正确',
-                step: 'validate_messages'
+                error: '缺少 messages 字段或格式不正确'
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        // ---- 2. 检查环境变量 ----
+        // ---- 6. 读取 API Key ----
         const apiKey = context.env.NVIDIA_API_KEY;
-        
-        // 调试信息：检查 Key 是否存在
         if (!apiKey) {
             return new Response(JSON.stringify({
-                error: 'API Key 未在环境变量中设置',
-                step: 'env_key_missing',
-                env_keys: Object.keys(context.env || {})  // 列出所有已设置的变量名
+                error: 'API Key 未设置',
+                env_keys: Object.keys(context.env || {})
             }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        // 检查 Key 格式（不暴露完整 Key）
-        const keyPreview = apiKey.substring(0, 10) + '...';
-        if (!apiKey.startsWith('nvapi-')) {
+        // ---- 7. 调用 NVIDIA API ----
+        const response = await fetch('https://integrate.api.nvidia.com/v1', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'nvidia/nemotron-3-super-120b-a12b',
+                messages: parsed.messages,
+                stream: false
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
             return new Response(JSON.stringify({
-                error: 'API Key 格式可能不正确（应以 nvapi- 开头）',
-                preview: keyPreview,
-                step: 'key_format'
+                error: `NVIDIA 错误 (${response.status})`,
+                detail: data.error?.message || JSON.stringify(data)
             }), {
-                status: 500,
+                status: response.status,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        // ---- 3. 调用 NVIDIA API ----
-        try {
-            const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify({
-                    model: 'nvidia/nemotron-3-super-120b-a12b',
-                    messages: parsed.messages,
-                    stream: false
-                })
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                return new Response(JSON.stringify({
-                    error: `NVIDIA API 错误 (${response.status})`,
-                    detail: data.error?.message || JSON.stringify(data),
-                    step: 'nvidia_api_error'
-                }), {
-                    status: response.status,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-
-            return new Response(JSON.stringify(data), {
-                headers: { 'Content-Type': 'application/json' }
-            });
-
-        } catch (fetchErr) {
-            return new Response(JSON.stringify({
-                error: `调用 NVIDIA API 失败: ${fetchErr.message}`,
-                step: 'nvidia_fetch_error'
-            }), {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
+        return new Response(JSON.stringify(data), {
+            headers: { 'Content-Type': 'application/json' }
+        });
 
     } catch (err) {
         return new Response(JSON.stringify({
-            error: `服务器内部错误: ${err.message}`,
-            step: 'server_error'
+            error: `服务器错误: ${err.message}`
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
