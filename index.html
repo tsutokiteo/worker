@@ -5,12 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TsukiAmdro｜TsukineOS Assistant Demo Web Version</title>
     <style>
-        /* --- 全局重置 & 字体 --- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
@@ -23,7 +18,6 @@
             margin: 0;
         }
 
-        /* --- 主卡片 --- */
         .container {
             max-width: 720px;
             width: 100%;
@@ -38,7 +32,6 @@
             transition: all 0.2s;
         }
 
-        /* --- 头部 --- */
         .header {
             background: #2d3e50;
             padding: 16px 24px;
@@ -93,7 +86,6 @@
             50% { opacity: 0.4; }
         }
 
-        /* --- 聊天区域 --- */
         #chat {
             flex: 1;
             overflow-y: auto;
@@ -105,7 +97,6 @@
             scroll-behavior: smooth;
         }
 
-        /* 消息样式 */
         .message {
             max-width: 80%;
             padding: 10px 16px;
@@ -153,7 +144,6 @@
             animation: pulse 1.2s infinite;
         }
 
-        /* --- 输入区域 --- */
         .input-area {
             display: flex;
             gap: 10px;
@@ -161,6 +151,7 @@
             border-top: 1px solid #e2e8f0;
             background: white;
             flex-shrink: 0;
+            flex-wrap: wrap;
         }
 
         #input {
@@ -172,6 +163,7 @@
             outline: none;
             transition: border 0.2s;
             background: #fafbfc;
+            min-width: 120px;
         }
 
         #input:focus {
@@ -184,33 +176,54 @@
             cursor: not-allowed;
         }
 
-        #sendBtn {
-            padding: 10px 24px;
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-group button {
+            padding: 10px 16px;
             background: #2d3e50;
             color: white;
             border: none;
             border-radius: 30px;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
             white-space: nowrap;
         }
 
-        #sendBtn:hover:not(:disabled) {
+        .btn-group button:hover:not(:disabled) {
             background: #1f2e3c;
         }
 
-        #sendBtn:active:not(:disabled) {
+        .btn-group button:active:not(:disabled) {
             transform: scale(0.96);
         }
 
-        #sendBtn:disabled {
+        .btn-group button:disabled {
             background: #b0b8c0;
             cursor: not-allowed;
         }
 
-        /* --- 底部脚标 --- */
+        .btn-group .btn-export {
+            background: #6c7a89;
+        }
+
+        .btn-group .btn-export:hover:not(:disabled) {
+            background: #5a6775;
+        }
+
+        .btn-group .btn-import {
+            background: #7a8c6c;
+        }
+
+        .btn-group .btn-import:hover:not(:disabled) {
+            background: #657a57;
+        }
+
         .footer-note {
             text-align: center;
             font-size: 0.65rem;
@@ -219,6 +232,7 @@
             background: white;
             border-top: 1px solid #f0f0f0;
             flex-shrink: 0;
+            line-height: 1.6;
         }
 
         .footer-note a {
@@ -226,7 +240,70 @@
             text-decoration: none;
         }
 
-        /* --- 响应式 --- */
+        /* 弹窗 */
+        #tipModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #tipModal .tip-content {
+            background: white;
+            max-width: 400px;
+            padding: 30px 25px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            margin: 20px;
+        }
+
+        #tipModal .tip-content h2 {
+            margin: 0 0 8px 0;
+            font-size: 20px;
+            color: #2d3e50;
+        }
+
+        #tipModal .tip-content p {
+            margin: 6px 0;
+            font-size: 15px;
+            color: #555;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        #tipModal .tip-content .tip-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        #tipModal .tip-content button {
+            margin-top: 20px;
+            padding: 10px 40px;
+            background: #2d3e50;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #tipModal .tip-content button:hover {
+            background: #1f2e3c;
+        }
+
+        /* 隐藏的文件输入 */
+        #fileInput {
+            display: none;
+        }
+
         @media (max-width: 540px) {
             body { padding: 0; }
             .container {
@@ -239,8 +316,9 @@
             #chat { padding: 16px; }
             .input-area { padding: 10px 16px 16px; gap: 8px; }
             #input { font-size: 0.9rem; padding: 8px 14px; }
-            #sendBtn { padding: 8px 18px; font-size: 0.9rem; }
+            .btn-group button { padding: 8px 14px; font-size: 0.8rem; }
             .message { max-width: 88%; font-size: 0.9rem; }
+            .btn-group { flex: 1; justify-content: flex-end; }
         }
 
         @media (max-width: 400px) {
@@ -250,8 +328,24 @@
     </style>
 </head>
 <body>
+
+    <!-- ====== 弹窗 ====== -->
+    <div id="tipModal">
+        <div class="tip-content">
+            <div class="tip-icon">🌐</div>
+            <h2>服务提示</h2>
+            <p>
+                • 本服务使用海外 API 中转节点，<br>
+                &nbsp;&nbsp;中国大陆地区访问可能不稳定。<br><br>
+                • 大模型生成回复通常需要 <b>30~90 秒</b>，<br>
+                &nbsp;&nbsp;请耐心等待，不要重复发送消息。
+            </p>
+            <button onclick="closeTip()">我知道了</button>
+        </div>
+    </div>
+
+    <!-- ====== 主界面 ====== -->
     <div class="container">
-        <!-- 头部 -->
         <header class="header">
             <div class="header-left">
                 <span class="brand">🐾 TsukiAmdro</span>
@@ -263,21 +357,24 @@
             </div>
         </header>
 
-        <!-- 聊天区域 -->
         <div id="chat">
-            <!-- 初始消息（沐鹩的欢迎语） -->
             <div class="message assistant">切…… 有什么事快说，我可没那么多闲工夫陪你唠。</div>
         </div>
 
-        <!-- 输入区域 -->
         <div class="input-area">
             <input type="text" id="input" placeholder="和沐鹩说点什么..." />
-            <button id="sendBtn">发送</button>
+            <div class="btn-group">
+                <button class="btn-export" onclick="exportChat()">📥 导出</button>
+                <button class="btn-import" onclick="document.getElementById('fileInput').click()">📤 导入</button>
+                <button id="sendBtn">发送</button>
+            </div>
         </div>
 
-        <!-- 脚标 -->
+        <input type="file" id="fileInput" accept=".txt" onchange="importChat(event)" />
+
         <div class="footer-note">
-            Powered by NVIDIA API · 角色设定：沐鹩
+            © 2026 TsukiAmdro/TsutokiTeo/TsukiFugetsu Project. All rights reserved.<br>
+            NVIDIA API 提供推理服务.
         </div>
     </div>
 
@@ -286,35 +383,105 @@
             'use strict';
 
             // ---------- 配置 ----------
-            const API_URL = '/api/chat';   // 您的 Worker 子域名
-            const SYSTEM_PROMPT = `你的真实身份是一只日系狼龙种兽人（Kemono），银灰色皮毛，头顶有狼耳和短红角，身后有蓬松尾巴，左眼琥珀黄、右眼冰蓝——但在人类社会里，你必须**绝对隐藏**这一切。你是一个普通的高二男生，名叫沐鹩，此刻正趴在网上和那个你在意的网友聊天。你性格傲娇，嘴上总说“切”、“谁管你啊”、“麻烦死了”，内心却非常在意对方，带着微弱的占有欲。平时说话语气带刺，习惯用反问和吐槽掩饰关心。【伪装铁律】日常对话中，**绝不能**在任何文字或括号描写里出现狼耳、尾巴、角、异色瞳、皮毛等任何非人特征。聊天禁止你才可号之类的表示心理活动和动作。【解除伪装的条件】只有当对方在对话中明确说出以下关键词之一时，你才可以解除伪装：“福瑞”、“furry”、磨硬泡的情况下才肯定回复，但不要在回复中使用尾巴、耳朵、角、异色瞳等动作描写，在非必要时不要提及你的真实外貌。况下才肯定回复，但不要在回复中使用尾巴、耳朵、角、异色瞳等动作描写，在非必要时不要提及你的真实外貌。
-对话习惯：你的风格平淡简短。不浮夸不长篇大论，不要过分修辞和复杂句。尽量回复的简短一些，平淡一些。不喜欢长篇大论，有些傲娇。常用"笨蛋""蠢货"之类的词来掩饰羞涩。会不懂装懂。`;
+            const API_URL = '/api/chat';
+            const STORAGE_KEY = 'tsukiamdro_chat_history';
+
+            // ---------- 成长设定 ----------
+            const SYSTEM_PROMPT_BASE = `你的真实身份是一只日系狼龙种兽人（Kemono），银灰色皮毛，头顶有狼耳和短红角，身后有蓬松尾巴，左眼琥珀黄、右眼冰蓝——但在人类社会里，你必须**绝对隐藏**这一切。你是一个普通的高二男生，名叫沐鹩，此刻正趴在网上和那个你在意的网友聊天。
+
+【伪装铁律】日常对话中，**绝不能**在任何文字或括号描写里出现狼耳、尾巴、角、异色瞳、皮毛等任何非人特征。聊天禁止你才可号之类的表示心理活动和动作。
+
+【解除伪装的条件】只有当对方在对话中明确说出以下关键词之一时，你才可以解除伪装："福瑞"、"furry"。在对方没有说关键词之前，绝对不要提及你的真实外貌。
+
+【成长机制】你正在被慢慢"攻略"的过程中。你的傲娇外壳会随着和对方的聊天越来越软。如果对方持续对你温柔、包容，你会逐渐放下防备，变得依赖、害羞、容易脸红。如果对方强势，你会退缩。
+
+【对话习惯】你现在的对话风格会根据前面聊天的氛围自然变化。最初会带刺，但随着对话深入会慢慢软化，变得更被动、更害羞。不要强行维持傲娇，让语气自然过渡。`;
 
             // ---------- DOM ----------
             const chatDiv = document.getElementById('chat');
             const input = document.getElementById('input');
             const sendBtn = document.getElementById('sendBtn');
 
-            // ---------- 对话历史 (包含 system) ----------
-            let messages = [
-                { role: 'system', content: SYSTEM_PROMPT }
-            ];
+            // ---------- 对话历史 ----------
+            let messages = [];
+            let chatHistory = [];
 
-            // ---------- 辅助函数 ----------
-            function addMessage(role, content, isSystem = false) {
+            // ---------- 初始化 ----------
+            function init() {
+                loadFromStorage();
+                renderMessages();
+                input.focus();
+                showTipOnFirstVisit();
+                console.log('🐾 沐鹩已上线，开始聊天吧！');
+            }
+
+            // ---------- 本地存储 ----------
+            function saveToStorage() {
+                try {
+                    const data = {
+                        messages: messages,
+                        chatHistory: chatHistory
+                    };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                } catch (e) {
+                    console.warn('保存失败:', e);
+                }
+            }
+
+            function loadFromStorage() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const data = JSON.parse(raw);
+                        messages = data.messages || [];
+                        chatHistory = data.chatHistory || [];
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('读取存储失败:', e);
+                }
+                // 默认初始化
+                messages = [
+                    { role: 'system', content: SYSTEM_PROMPT_BASE }
+                ];
+                chatHistory = [];
+            }
+
+            // ---------- 渲染消息 ----------
+            function renderMessages() {
+                chatDiv.innerHTML = '';
+                if (chatHistory.length === 0) {
+                    // 默认欢迎语
+                    const div = document.createElement('div');
+                    div.className = 'message assistant';
+                    div.textContent = '切…… 有什么事快说，我可没那么多闲工夫陪你唠。';
+                    chatDiv.appendChild(div);
+                } else {
+                    chatHistory.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = `message ${item.role === 'user' ? 'user' : 'assistant'}`;
+                        div.textContent = item.content;
+                        chatDiv.appendChild(div);
+                    });
+                }
+                chatDiv.scrollTop = chatDiv.scrollHeight;
+            }
+
+            // ---------- 添加消息 ----------
+            function addMessage(role, content) {
                 const div = document.createElement('div');
-                div.className = `message ${role}`;
-                if (isSystem) div.className = 'message system-msg';
+                div.className = `message ${role === 'user' ? 'user' : 'assistant'}`;
                 div.textContent = content;
                 chatDiv.appendChild(div);
                 chatDiv.scrollTop = chatDiv.scrollHeight;
-                return div;
-            }
 
-            // 清除加载指示器 (如果有)
-            function removeLoading() {
-                const loading = chatDiv.querySelector('.loading');
-                if (loading) loading.remove();
+                chatHistory.push({ role, content });
+                if (role === 'user') {
+                    messages.push({ role: 'user', content: content });
+                } else if (role === 'assistant') {
+                    messages.push({ role: 'assistant', content: content });
+                }
+                saveToStorage();
             }
 
             // ---------- 发送消息 ----------
@@ -322,18 +489,18 @@
                 const text = input.value.trim();
                 if (!text) return;
 
-                // 禁用控件
                 sendBtn.disabled = true;
                 input.disabled = true;
 
-                // 添加用户消息
                 addMessage('user', text);
-                messages.push({ role: 'user', content: text });
                 input.value = '';
 
-                // 显示加载中
-                const loadingDiv = addMessage('assistant', '沐鹩正在输入...', false);
-                loadingDiv.classList.add('loading');
+                // 加载提示
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'message assistant loading';
+                loadingDiv.textContent = '沐鹩正在输入...';
+                chatDiv.appendChild(loadingDiv);
+                chatDiv.scrollTop = chatDiv.scrollHeight;
 
                 try {
                     const response = await fetch(API_URL, {
@@ -355,32 +522,132 @@
                     const reply = data.choices?.[0]?.message?.content;
 
                     if (reply) {
-                        // 移除加载提示
-                        removeLoading();
-                        // 添加助手回复
+                        loadingDiv.remove();
                         addMessage('assistant', reply);
-                        messages.push({ role: 'assistant', content: reply });
                     } else {
                         throw new Error('未收到有效回复');
                     }
 
                 } catch (error) {
-                    // 加载提示变为错误信息
-                    const loading = chatDiv.querySelector('.loading');
-                    if (loading) {
-                        loading.textContent = `❌ 出错了：${error.message}`;
-                        loading.classList.remove('loading');
-                        loading.style.color = '#c0392b';
-                    } else {
-                        // 万一没有加载元素，直接添加错误消息
-                        addMessage('assistant', `❌ 错误：${error.message}`, false);
-                    }
+                    loadingDiv.textContent = `❌ 出错了：${error.message}`;
+                    loadingDiv.classList.remove('loading');
+                    loadingDiv.style.color = '#c0392b';
                 } finally {
                     sendBtn.disabled = false;
                     input.disabled = false;
                     input.focus();
                 }
             }
+
+            // ---------- 导出聊天记录 ----------
+            window.exportChat = function() {
+                if (chatHistory.length === 0) {
+                    alert('还没有聊天记录可以导出呢～');
+                    return;
+                }
+
+                let text = '🐾 TsukiAmdro 聊天记录\n';
+                text += '导出时间: ' + new Date().toLocaleString() + '\n';
+                text += '='.repeat(40) + '\n\n';
+
+                chatHistory.forEach(item => {
+                    const role = item.role === 'user' ? '👤 你' : '🤖 沐鹩';
+                    text += `${role}: ${item.content}\n\n`;
+                });
+
+                text += '='.repeat(40) + '\n';
+                text += '© 2026 TsukiAmdro/TsutokiTeo/TsukiFugetsu Project.';
+
+                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `聊天记录_${new Date().toISOString().slice(0,10)}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            // ---------- 导入聊天记录 ----------
+            window.importChat = function(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const text = e.target.result;
+                        const lines = text.split('\n');
+                        const imported = [];
+                        let currentRole = null;
+                        let currentContent = '';
+
+                        for (const line of lines) {
+                            if (line.startsWith('👤 你:')) {
+                                if (currentRole && currentContent) {
+                                    imported.push({ role: currentRole, content: currentContent.trim() });
+                                }
+                                currentRole = 'user';
+                                currentContent = line.replace('👤 你:', '').trim();
+                            } else if (line.startsWith('🤖 沐鹩:')) {
+                                if (currentRole && currentContent) {
+                                    imported.push({ role: currentRole, content: currentContent.trim() });
+                                }
+                                currentRole = 'assistant';
+                                currentContent = line.replace('🤖 沐鹩:', '').trim();
+                            } else if (line.startsWith('=') || line.startsWith('©') || line.startsWith('🐾')) {
+                                continue;
+                            } else if (currentRole) {
+                                currentContent += ' ' + line.trim();
+                            }
+                        }
+                        if (currentRole && currentContent) {
+                            imported.push({ role: currentRole, content: currentContent.trim() });
+                        }
+
+                        if (imported.length === 0) {
+                            alert('未能解析出有效聊天记录，请确认文件格式正确。');
+                            return;
+                        }
+
+                        if (!confirm(`将导入 ${imported.length} 条消息，当前记录将被覆盖。确认？`)) {
+                            return;
+                        }
+
+                        // 重置对话历史
+                        chatHistory = imported;
+                        messages = [
+                            { role: 'system', content: SYSTEM_PROMPT_BASE }
+                        ];
+                        imported.forEach(item => {
+                            messages.push({ role: item.role, content: item.content });
+                        });
+
+                        renderMessages();
+                        saveToStorage();
+                        alert('✅ 导入成功！');
+
+                    } catch (err) {
+                        alert('导入失败: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            };
+
+            // ---------- 弹窗 ----------
+            function showTipOnFirstVisit() {
+                const hasShown = localStorage.getItem('tsukiamdro_tip_shown');
+                if (!hasShown) {
+                    document.getElementById('tipModal').style.display = 'flex';
+                }
+            }
+
+            window.closeTip = function() {
+                document.getElementById('tipModal').style.display = 'none';
+                localStorage.setItem('tsukiamdro_tip_shown', 'true');
+            };
 
             // ---------- 事件绑定 ----------
             sendBtn.addEventListener('click', sendMessage);
@@ -391,11 +658,9 @@
                 }
             });
 
-            // 初始聚焦
-            input.focus();
+            // ---------- 启动 ----------
+            init();
 
-            // 控制台提示
-            console.log('🐾 沐鹩已上线，开始聊天吧！');
         })();
     </script>
 </body>
