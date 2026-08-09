@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TsukiAmdro｜项目介绍</title>
+    <!-- 仿 Minecraft 官网风格 -->
+    <style>
+        /* ===== 全局重置 & 字体 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: #1a1a1a;
+            color: #d4d4d4;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== 顶部导航 ===== */
+        .navbar {
+            background: #2d2d2d;
+            padding: 12px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #4a4a4a;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #f5f5f5;
+            letter-spacing: 1px;
+        }
+
+        .navbar .logo span {
+            color: #8b8b8b;
+            font-weight: 400;
+            font-size: 16px;
+            margin-left: 8px;
+        }
+
+        .navbar .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .navbar .nav-links a {
+            color: #b0b0b0;
+            text-decoration: none;
+            font-size: 15px;
+            transition: color 0.2s;
+        }
+
+        .navbar .nav-links a:hover {
+            color: #ffffff;
+        }
+
+        .navbar .nav-links .btn-chat {
+            background: #4a7a5a;
+            color: white;
+            padding: 6px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .navbar .nav-links .btn-chat:hover {
+            background: #5a8a6a;
+            color: white;
+        }
+
+        /* ===== 主内容容器 ===== */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px 60px;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* ===== 头部横幅 ===== */
+        .hero {
+            background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+            border-radius: 16px;
+            padding: 48px 40px;
+            margin-bottom: 40px;
+            border: 1px solid #3a3a3a;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .hero h1 small {
+            font-size: 20px;
+            font-weight: 400;
+            color: #8b8b8b;
+            margin-left: 12px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #b0b0b0;
+            line-height: 1.7;
+            max-width: 700px;
+        }
+
+        .hero .badge {
+            display: inline-block;
+            margin-top: 16px;
+            background: #3a5a4a;
+            color: #b0e0c0;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* ===== 栅格卡片 ===== */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: #262626;
+            border-radius: 12px;
+            padding: 28px 32px;
+            border: 1px solid #3a3a3a;
+            transition: border-color 0.2s;
+        }
+
+        .card:hover {
+            border-color: #5a5a5a;
+        }
+
+        .card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #f0f0f0;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h3 .icon {
+            font-size: 24px;
+        }
+
+        .card p,
+        .card li {
+            color: #b8b8b8;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .card ul li {
+            padding: 4px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .card ul li:last-child {
+            border-bottom: none;
+        }
+
+        .card ul li strong {
+            color: #e0e0e0;
+        }
+
+        .card .link {
+            color: #7ab8a0;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .card .link:hover {
+            border-bottom-color: #7ab8a0;
+        }
+
+        /* ===== 全宽卡片 ===== */
+        .card-full {
+            grid-column: 1 / -1;
+        }
+
+        /* ===== 鸣谢列表 ===== */
+        .credits-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 32px;
+            margin-top: 4px;
+        }
+
+        .credits-list span {
+            color: #c8c8c8;
+            font-size: 15px;
+        }
+
+        .credits-list .name {
+            color: #f0f0f0;
+            font-weight: 500;
+        }
+
+        /* ===== 底部 ===== */
+        .footer {
+            background: #1a1a1a;
+            border-top: 1px solid #2a2a2a;
+            padding: 20px 40px;
+            text-align: center;
+            color: #6a6a6a;
+            font-size: 13px;
+        }
+
+        .footer a {
+            color: #7a9a8a;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #9abaaa;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 12px 20px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .navbar .nav-links {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .hero {
+                padding: 28px 20px;
+            }
+
+            .hero h1 {
+                font-size: 28px;
+            }
+
+            .hero h1 small {
+                font-size: 16px;
+                display: block;
+                margin-left: 0;
+                margin-top: 4px;
+            }
+
+            .grid-2col {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 20px 16px 40px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar .logo {
+                font-size: 18px;
+            }
+
+            .hero h1 {
+                font-size: 22px;
+            }
+
+            .hero p {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 导航栏 ===== -->
+    <nav class="navbar">
+        <div class="logo">
+            TsukiAmdro
+            <span>· 智能对话</span>
+        </div>
+        <div class="nav-links">
+            <a href="#intro">项目</a>
+            <a href="#dev">开发者</a>
+            <a href="#credits">鸣谢</a>
+            <a href="https://github.com/your-username/TsukiAmdro" target="_blank" class="link">GitHub</a>
+            <a href="https://chat.tsukineos.top/" class="btn-chat">开始聊天</a>
+        </div>
+    </nav>
+
+    <!-- ===== 主内容 ===== -->
+    <div class="container">
+
+        <!-- 横幅 -->
+        <section class="hero" id="intro">
+            <h1>
+                TsukiAmdro
+                <small>AI 智能体 · 聊天助手</small>
+            </h1>
+            <p>
+                基于大语言模型（LLM）的智能对话系统。
+                提供自然、有温度的聊天体验。
+                项目当前为演示版本，持续开发中。
+            </p>
+            <span class="badge">⚙️ 开发中 · v1.0-demo</span>
+        </section>
+
+        <!-- 两列卡片 -->
+        <div class="grid-2col">
+
+            <!-- 项目信息 -->
+            <div class="card" id="project">
+                <h3>
+                    <span class="icon">📁</span>
+                    项目
+                </h3>
+                <ul>
+                    <li><strong>名称</strong> TsukiAmdro</li>
+                    <li><strong>类型</strong> AI 智能体 · 对话系统</li>
+                    <li><strong>角色</strong> 沐鹩（傲娇 · 隐藏兽人）</li>
+                    <li><strong>推理服务</strong> NVIDIA API</li>
+                    <li><strong>状态</strong> 演示版 · 开发中</li>
+                </ul>
+                <p style="margin-top: 12px;">
+                    <a href="https://github.com/your-username/TsukiAmdro" target="_blank" class="link">
+                        GitHub 仓库 →
+                    </a>
+                </p>
+            </div>
+
+            <!-- 开发者 -->
+            <div class="card" id="dev">
+                <h3>
+                    <span class="icon">👤</span>
+                    开发者
+                </h3>
+                <ul>
+                    <li><strong>开发</strong> TsutokiTeo</li>
+                    <li><strong>项目</strong> TsukineOS / TsukiAmdro</li>
+                    <li><strong>协议</strong> MIT License</li>
+                </ul>
+                <p style="margin-top: 12px; color: #8a8a8a; font-size: 14px;">
+                    独立开发 · 个人项目
+                </p>
+            </div>
+
+            <!-- 技术栈（全宽） -->
+            <div class="card card-full">
+                <h3>
+                    <span class="icon">⚡</span>
+                    技术栈
+                </h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px 20px;">
+                    <span style="color: #b8b8b8;">· 前端：HTML / CSS / JavaScript</span>
+                    <span style="color: #b8b8b8;">· 后端：Cloudflare Pages Functions</span>
+                    <span style="color: #b8b8b8;">· 推理：NVIDIA API（兼容 OpenAI 格式）</span>
+                    <span style="color: #b8b8b8;">· 客户端：WebView2 / 浏览器</span>
+                </div>
+            </div>
+
+            <!-- 鸣谢 -->
+            <div class="card card-full" id="credits">
+                <h3>
+                    <span class="icon">🙏</span>
+                    鸣谢
+                </h3>
+                <div class="credits-list">
+                    <span><span class="name">NVIDIA</span> · 推理服务提供</span>
+                    <span><span class="name">Cloudflare</span> · 部署与托管</span>
+                    <span><span class="name">沐鹩</span> · 角色设定</span>
+                    <span><span class="name">TsukineOS</span> · 项目背景</span>
+                    <span style="color: #6a6a6a; font-size: 13px;">以及所有参与测试与反馈的朋友</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== 底部 ===== -->
+    <div class="footer">
+        <p>
+            © 2026 TsukiAmdro / TsutokiTeo / TsukiFugetsu Project.
+            <br>
+            <a href="https://github.com/your-username/TsukiAmdro" target="_blank">GitHub</a>
+            ·
+            <a href="https://chat.tsukineos.top/" target="_blank">在线体验</a>
+            ·
+            <a href="https://tsukineos.top/" target="_blank">TsukineOS</a>
+        </p>
+    </div>
+
+</body>
+</html>
